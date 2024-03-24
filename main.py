@@ -9,6 +9,8 @@ import torch.nn as nn
 from utils.data import ChineseMnistDataset
 from utils.train import train_epoch, test_epoch, plot_results
 
+from torch.optim.lr_scheduler import StepLR
+
 """
     Training of a Convolutional Neural Netowrk to classify
     a Chinese MNIST like dataset.
@@ -47,7 +49,8 @@ def main():
 
     # Split the dataset
     SPLIT_SIZE = [10000, 2500, 2500]
-    train_dataset, val_dataset, test_dataset = random_split(dataset, SPLIT_SIZE)
+    generator1 = torch.Generator().manual_seed(42)
+    train_dataset, val_dataset, test_dataset = random_split(dataset, SPLIT_SIZE, generator=generator1)
 
     # Create the train, validation and test datasets
     train_loader = DataLoader(train_dataset, batch_size=HYPER_PARAMS["batch_size"], shuffle=True)
@@ -68,9 +71,11 @@ def main():
     criterion = HYPER_PARAMS['criterion']()
 
     train_losses = []
-    test_losses = []
+    val_losses = []
     train_accs = []
-    test_accs = []
+    val_accs = []
+
+    scheduler = StepLR(optimizer, step_size=3, gamma=0.1)
 
     # Loop for epochs
     for epoch in range(HYPER_PARAMS['num_epochs']):
@@ -81,19 +86,21 @@ def main():
         train_losses.append(train_loss)
         train_accs.append(train_acc)
 
-        # Test one epoch
-        test_loss, test_accuracy = test_epoch(test_loader, network, criterion, device)
+        # Validate one epoch
+        val_loss, val_accuracy = test_epoch(val_loader, network, criterion, device)
 
         # Append test metrics
-        test_losses.append(test_loss)
-        test_accs.append(test_accuracy)
+        val_losses.append(val_loss)
+        val_accs.append(val_accuracy)
+
+        scheduler.step()
 
     # Save the model
     torch.save(network.state_dict(), "/home/jesusferrandiz/Learning/pytorch/ml-ops-session-2/weights/model_1.pth")
 
     # Show the results
     # Plot the plots of the learning curves
-    plot_results(train_losses, test_losses, train_accs, test_accs)
+    plot_results(train_losses, val_losses, train_accs, val_accs, "training_validation")
 
 if __name__ == "__main__":
     main()

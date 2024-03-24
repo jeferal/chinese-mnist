@@ -116,7 +116,7 @@ def test_epoch(
         ))
     return test_loss, test_acc
 
-def plot_results(train_losses, test_losses, train_accs, test_accs):
+def plot_results(train_losses, test_losses, train_accs, test_accs, name):
     # Plot the plots of the learning curves
     plt.figure(figsize=(10, 8))
     plt.subplot(2,1,1)
@@ -133,6 +133,6 @@ def plot_results(train_losses, test_losses, train_accs, test_accs):
     plt.plot(train_accs, label='train')
     plt.plot(test_accs, label='test')
 
-    plt.savefig("/home/jesusferrandiz/Learning/pytorch/ml-ops-session-2/weights/model_train_plot.png")
+    plt.savefig(f"/home/jesusferrandiz/Learning/pytorch/ml-ops-session-2/weights/model_{name}_plot.png")
 
     plt.show()
